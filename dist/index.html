@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        html, body, #wrapper {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        
+        body {
+            background-color: black;
+        }
+
+        #wrapper {
+            display: table;
+        }
+
+        .wrapper-cell {
+            display: table-cell;
+            width: 50vw;
+            position: relative;
+            height: 100%;
+        }
+
+        .greed {
+            background-color: white;
+            height: 100%;
+            width: 100vh;
+            margin: 0 0;
+        }
+
+        .cell, .active-cell {
+            -webkit-user-drag: element;
+            position: relative;
+        }   
+
+        .cell, .active-cell {
+            background-color: white;
+        }  
+
+        .active-cell {
+            background-color: black;
+        }
+
+        #neural-network-output {
+            background-color: white;
+            width: auto;
+            vertical-align: middle;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 2rem;
+            padding: 1rem;
+            
+        }
+
+        #balance-nn {
+            color: white;
+            padding: 2rem 0 2rem;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div class="wrapper-cell">
+
+        </div>
+        
+        <div class="wrapper-cell" style="padding: 1rem;">
+            <article>
+                <button id="result-button">Result</button>
+                <button id="learning-button">Learning</button>
+                <div>
+                    <p id="neural-network-output">
+                        <span>Result: </span>
+                        <span id="neural-network-result">0</span>
+                        <br/>
+                        <span>Error: </span>
+                        <span id="neural-network-error">0</span>
+                        <br/>
+                        <span>Step: </span>
+                        <span id="neural-network-step">0</span>
+                    </p>
+                </div>
+            </article>
+                <div id="balance-nn">
+                    <label for="actual-answer">Corrent answer:  </label>
+                    <input id="actual-answer" type="number" min="0" max="9" value="0"/>
+                </div>
+                <button id="ok-button" type="button">Ok</button>
+            </form>
+
+
+            <button id="reset">Reset</button>
+
+        </div>
+    </div>
+    
+    <script async="true" src="./index.js"></script>
+
+</body>
+</html>
