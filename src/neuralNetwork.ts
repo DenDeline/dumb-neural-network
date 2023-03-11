@@ -8,9 +8,7 @@ import { Neuron } from './neuron'
 export class NeuralNetwork {
     public readonly layers: Layer[] = []
     public weights: Weight[][][] = []
-
     public learningError = 0
-
     public readonly learningMultiplier: number = 0.5
 
     constructor(...layersBuilders: ILayerBuilder[]) {
@@ -35,27 +33,30 @@ export class NeuralNetwork {
     }
 
     public resultFromOutput() {
-        this.forWards()
+        this.forwardPropagate()
         let numbers = this.neuronArrayToNumberArray(this.outputLayer.neurons)
         let result = numbers.indexOf(Math.max(...numbers))
         return result
     }
 
-    public forWards() {
+    public forwardPropagate() {
         let layers = this.layers
 
-        this.weights.forEach((weight, currentLayerIndex) => {
+        this.weights.forEach((weightByLayer, currentLayerIndex) => {
             const currentLayerNeurons = layers[currentLayerIndex].neurons
             const nextLayerNeurons = layers[currentLayerIndex + 1].neurons
-            const currentLayerNeuronCount = weight.length
-            const nextLayerNeuronCount = weight[0].length
 
-            for (let i = 0; i < nextLayerNeuronCount; i++) {
+            const currentLayerAllNeuronCount = weightByLayer.length
+            const nextLayerDefaultNeuronCount = weightByLayer[0].length
+
+            for (let nextLayerNeuronIndex = 0; nextLayerNeuronIndex < nextLayerDefaultNeuronCount; nextLayerNeuronIndex++) {
                 let result = 0
-                for (let j = 0; j < currentLayerNeuronCount; j++) {
-                    result += currentLayerNeurons[i].output * weight[j][i].value
+                for (let currentLayerNeuronIndex = 0; currentLayerNeuronIndex < currentLayerAllNeuronCount; currentLayerNeuronIndex++) {
+                    result
+                        += currentLayerNeurons[currentLayerNeuronIndex].output
+                        * weightByLayer[currentLayerNeuronIndex][nextLayerNeuronIndex].value
                 }
-                nextLayerNeurons[i].output = this.activationFunction(result)
+                nextLayerNeurons[nextLayerNeuronIndex].output = this.activationFunction(result)
             }
         })
     }
@@ -69,79 +70,81 @@ export class NeuralNetwork {
     }
 
     public balanceWeights(correctOutput: number[]) {
-        this.resetLearningError()
         this.initOutputErrors(correctOutput)
-        this.calculateOutputsErrors()
-        this.recalculateWeights()
-    }
-
-    private resetLearningError() {
-        this.learningError = 0
+        this.backwardPropagateError()
+        this.updateWeights()
     }
 
     private initOutputErrors(correctOutput: number[]) {
+        let learningError = 0
         this.outputLayer.neurons.forEach((neuron, neuronIndex) => {
             neuron.error = correctOutput[neuronIndex] - neuron.output
-            this.learningError += Math.abs(neuron.error)
+            learningError += Math.abs(neuron.error)
         })
+        this.learningError = learningError
     }
 
-    private calculateOutputsErrors() {
+    private backwardPropagateError() {
         const layers = this.layers
         const weights = this.weights
 
-        for (let i = layers.length - 1; i > 1; i--) {
-            this.findErrors(layers[i], weights[i - 1], layers[i - 1])
-        }
-    }
+        for (let currentLayerIndex = layers.length - 1; currentLayerIndex > 1; currentLayerIndex--) {
+            const currentLayerInfo = layers[currentLayerIndex]
+            const prevLayerInfo = layers[currentLayerIndex - 1]
 
-    private findErrors(
-        inputLayer: Layer,
-        weight: Weight[][],
-        outputLayer: Layer) {
+            const prevLayerWeights = weights[currentLayerIndex - 1]
 
-        const inputLayerNeurons = inputLayer.neurons
-        const outputLayerNeurons = outputLayer.neurons
+            const currentLayerNeurons = currentLayerInfo.neurons
+            const prevLayerNeurons = prevLayerInfo.neurons
 
-        const weightWidth = weight.length - outputLayer.countOfOffsetNeurons
-        const weightHigh = weight[0].length
-
-        for (let i = 0; i < weightWidth; i++) {
-            let error = 0
-            for (let j = 0; j < weightHigh; j++) {
-                error += inputLayerNeurons[j].error * weight[i][j].value
+            for (let prevLayerNeuronIndex = 0; prevLayerNeuronIndex < prevLayerInfo.countOfDefaultNeurons; prevLayerNeuronIndex++) {
+                let error = 0
+                for (let currentLayerNeuronIndex = 0; currentLayerNeuronIndex < currentLayerInfo.countOfDefaultNeurons; currentLayerNeuronIndex++) {
+                    error
+                        += currentLayerNeurons[currentLayerNeuronIndex].error
+                        * prevLayerWeights[prevLayerNeuronIndex][currentLayerNeuronIndex].value
+                }
+                prevLayerNeurons[prevLayerNeuronIndex].error = error
             }
-            outputLayerNeurons[i].error = error
         }
     }
 
-    private recalculateWeights() {
+    private updateWeights() {
         const layers = this.layers
-        this.weights.forEach((weight, weightIndex) => {
-            this.backWards(layers[weightIndex], weight, layers[weightIndex + 1])
+        this.weights.forEach((weightByLayer, currentLayerIndex) => {
+            const currentLayerNeurons = layers[currentLayerIndex].neurons
+            const nextLayerNeurons = layers[currentLayerIndex + 1].neurons
+
+            const currentLayerAllNeuronsCount = weightByLayer.length
+            const nextLayerDefaultNeuronsCount = weightByLayer[0].length
+
+            for (let nextLayerNeuronIndex = 0; nextLayerNeuronIndex < nextLayerDefaultNeuronsCount; nextLayerNeuronIndex++) {
+                for (let currentLayerNeuronIndex = 0; currentLayerNeuronIndex < currentLayerAllNeuronsCount; currentLayerNeuronIndex++) {
+                    weightByLayer[currentLayerNeuronIndex][nextLayerNeuronIndex].value
+                        += this.learningMultiplier * nextLayerNeurons[nextLayerNeuronIndex].error
+                        * this.activationFunctionDerivative(nextLayerNeurons[nextLayerNeuronIndex].output)
+                        * currentLayerNeurons[currentLayerNeuronIndex].output
+                }
+            }
         })
     }
 
-    private backWards(input: Layer, weight: Weight[][], output: Layer) {
-        const inputLayerNeurons = input.neurons
-        const outputLayerNeurons = output.neurons
-        const weightWidth = weight.length
-        const weightHigh = weight[0].length
-
-        for (let j = 0; j < weightHigh; j++) {
-            for (let i = 0; i < weightWidth; i++) {
-                weight[i][j].value += this.learningMultiplier * outputLayerNeurons[j].error * this.activationFunctionDerivative(outputLayerNeurons[j].output) * inputLayerNeurons[i].output
+    public training(dataset: number[][], datasetOutput: number[][], maxEpochCount: number) {
+        for (let i = 0; i < maxEpochCount; i++) {
+            for (let j = 0; j < dataset.length; j++) {
+                this.setInput(dataset[j])
+                this.forwardPropagate()
+                this.balanceWeights(datasetOutput[j])
             }
         }
-    }
-
-    public training(dataset: number[], datasetOutput: number[]) {
-        this.setInput(dataset)
-        this.forWards()
-        this.balanceWeights(datasetOutput)
     }
 
     private neuronArrayToNumberArray(neurons: Neuron[]) {
         return neurons.map((value) => value.output)
+    }
+
+    public predict() {
+        this.forwardPropagate()
+        return this.neuronArrayToNumberArray(this.outputLayer.neurons)
     }
 }
