@@ -5,6 +5,12 @@ const config = {
   mode: 'development',
     devtool: 'inline-source-map',
     entry: './src/index.ts',
+    devServer: {
+      open: true,
+      client: {
+          progress: true,
+      }
+    },
     module: {
         rules: [
             {
