@@ -24,44 +24,28 @@ const datasetOutput = [[1,0],[1,0],[1,0],[0,1],[0,1],[0,1],[1,1],[1,1],[1,1],[1,
 
 const neuralNetwork = new NeuralNetwork(
     (inputLayer) => {
-        inputLayer.countOfDefaultNeurons = 9
-        inputLayer.countOfOffsetNeurons = 1
+        inputLayer.defaultNeuronsCount = 9
+        inputLayer.offsetNeuronsCount = 1
     },
     (hiddenLayer0) => {
-        hiddenLayer0.countOfDefaultNeurons = 5
-        hiddenLayer0.countOfOffsetNeurons = 1
+        hiddenLayer0.defaultNeuronsCount = 5
+        hiddenLayer0.offsetNeuronsCount = 1
     },
     (outputLayer) => {
-        outputLayer.countOfDefaultNeurons = 2
-        outputLayer.countOfOffsetNeurons = 0
+        outputLayer.defaultNeuronsCount = 2
+        outputLayer.offsetNeuronsCount = 0
     }
 )
 
 self.onmessage = (e: MessageEvent<IMessage>) => {
-    // const metric = () => {
-    //     let countOfValid = 0
-    //
-    //     for (let i = 0; i < dataset.length; i++) {
-    //         neuralNetwork.setInput(dataset[i])
-    //         if (!neuralNetwork.predict().some((v, j) => Math.round(v) != datasetOutput[i][j])){
-    //             ++countOfValid
-    //         }
-    //     }
-    //
-    //     console.log(countOfValid / dataset.length)
-    // }
-    //
-    // metric()
-
     if (e.data.action === 'training') {
-        neuralNetwork.training(dataset, datasetOutput, 500)
-        self.postMessage({ action: 'training_result', payload: neuralNetwork.learningError })
+        neuralNetwork.training(dataset, datasetOutput, 500, 0.1)
+        self.postMessage({ action: 'training_result', payload: { learningError: neuralNetwork.learningError, epoch: neuralNetwork.learningEpoch } })
 
     } else {
         neuralNetwork.setInput(e.data.payload as Array<number>)
-        neuralNetwork.predict()
-
-        self.postMessage({ action: 'prediction_result', payload: neuralNetwork.predict().map((v) => Math.round(v)) })
+        const prediction = neuralNetwork.predict()
+        self.postMessage({ action: 'prediction_result', payload: prediction.map((v) => Math.round(v)) })
     }
 }
 

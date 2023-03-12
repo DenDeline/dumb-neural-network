@@ -8,7 +8,9 @@ import { Neuron } from './neuron'
 export class NeuralNetwork {
     public readonly layers: Layer[] = []
     public weights: Weight[][][] = []
-    public learningError = 0
+
+    public learningError = 1
+    public learningEpoch = 0
     public readonly learningMultiplier: number = 0.5
 
     constructor(...layersBuilders: ILayerBuilder[]) {
@@ -43,11 +45,14 @@ export class NeuralNetwork {
         let layers = this.layers
 
         this.weights.forEach((weightByLayer, currentLayerIndex) => {
-            const currentLayerNeurons = layers[currentLayerIndex].neurons
-            const nextLayerNeurons = layers[currentLayerIndex + 1].neurons
+            const currentLayerInfo = layers[currentLayerIndex]
+            const nextLayerInfo = layers[currentLayerIndex + 1]
 
-            const currentLayerAllNeuronCount = weightByLayer.length
-            const nextLayerDefaultNeuronCount = weightByLayer[0].length
+            const currentLayerNeurons = currentLayerInfo.neurons
+            const nextLayerNeurons = nextLayerInfo.neurons
+
+            const currentLayerAllNeuronCount = currentLayerInfo.neuronsCount
+            const nextLayerDefaultNeuronCount = nextLayerInfo.defaultNeuronsCount
 
             for (let nextLayerNeuronIndex = 0; nextLayerNeuronIndex < nextLayerDefaultNeuronCount; nextLayerNeuronIndex++) {
                 let result = 0
@@ -97,9 +102,9 @@ export class NeuralNetwork {
             const currentLayerNeurons = currentLayerInfo.neurons
             const prevLayerNeurons = prevLayerInfo.neurons
 
-            for (let prevLayerNeuronIndex = 0; prevLayerNeuronIndex < prevLayerInfo.countOfDefaultNeurons; prevLayerNeuronIndex++) {
+            for (let prevLayerNeuronIndex = 0; prevLayerNeuronIndex < prevLayerInfo.neuronsCount; prevLayerNeuronIndex++) {
                 let error = 0
-                for (let currentLayerNeuronIndex = 0; currentLayerNeuronIndex < currentLayerInfo.countOfDefaultNeurons; currentLayerNeuronIndex++) {
+                for (let currentLayerNeuronIndex = 0; currentLayerNeuronIndex < currentLayerInfo.defaultNeuronsCount; currentLayerNeuronIndex++) {
                     error
                         += currentLayerNeurons[currentLayerNeuronIndex].error
                         * prevLayerWeights[prevLayerNeuronIndex][currentLayerNeuronIndex].value
@@ -112,11 +117,14 @@ export class NeuralNetwork {
     private updateWeights() {
         const layers = this.layers
         this.weights.forEach((weightByLayer, currentLayerIndex) => {
-            const currentLayerNeurons = layers[currentLayerIndex].neurons
-            const nextLayerNeurons = layers[currentLayerIndex + 1].neurons
+            const currentLayerInfo = layers[currentLayerIndex]
+            const nextLayerInfo = layers[currentLayerIndex + 1]
 
-            const currentLayerAllNeuronsCount = weightByLayer.length
-            const nextLayerDefaultNeuronsCount = weightByLayer[0].length
+            const currentLayerNeurons = currentLayerInfo.neurons
+            const nextLayerNeurons = nextLayerInfo.neurons
+
+            const currentLayerAllNeuronsCount = currentLayerInfo.neuronsCount
+            const nextLayerDefaultNeuronsCount = nextLayerInfo.defaultNeuronsCount
 
             for (let nextLayerNeuronIndex = 0; nextLayerNeuronIndex < nextLayerDefaultNeuronsCount; nextLayerNeuronIndex++) {
                 for (let currentLayerNeuronIndex = 0; currentLayerNeuronIndex < currentLayerAllNeuronsCount; currentLayerNeuronIndex++) {
@@ -129,13 +137,19 @@ export class NeuralNetwork {
         })
     }
 
-    public training(dataset: number[][], datasetOutput: number[][], maxEpochCount: number) {
-        for (let i = 0; i < maxEpochCount; i++) {
+    public training(dataset: number[][], datasetOutput: number[][], maxEpochCount: number, maxErrorPercent: number) {
+        for (let epochIndex = 0; epochIndex < maxEpochCount; epochIndex++) {
+            if (this.learningError < maxErrorPercent) {
+                break
+            }
+
             for (let j = 0; j < dataset.length; j++) {
                 this.setInput(dataset[j])
                 this.forwardPropagate()
                 this.balanceWeights(datasetOutput[j])
             }
+
+            this.learningEpoch++
         }
     }
 

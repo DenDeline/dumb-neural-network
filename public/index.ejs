@@ -68,34 +68,25 @@
 </head>
 <body>
 <div id="wrapper">
-    <div class="wrapper-cell">
-
-    </div>
-
+    <div class="wrapper-cell" id="drawer"></div>
     <div class="wrapper-cell" style="padding: 1rem;">
         <article style="margin-bottom: 16px">
             <button id="learning-button">Learning with dataset</button>
         </article>
+        <p id="neural-network-output">
+            <span>Prediction: </span>
+            <span id="neural-network-result">0</span>
+            <br/>
+            <span>Error: </span>
+            <span id="neural-network-error">0</span>
+            <br/>
+            <span>Epoch: </span>
+            <span id="neural-network-epoch">0</span>
+        </p>
         <article>
-            <button id="result-button">Result</button>
-            <button id="reset">Reset</button>
-            <div>
-                <p id="neural-network-output">
-                    <span>Result: </span>
-                    <span id="neural-network-result">0</span>
-                    <br/>
-                    <span>Error: </span>
-                    <span id="neural-network-error">0</span>
-                    <br/>
-                    <span>Step: </span>
-                    <span id="neural-network-step">0</span>
-                </p>
-            </div>
+            <button id="result-button">Predict</button>
+            <button id="reset">Clean grid</button>
         </article>
-        <div id="balance-nn">
-            <label for="actual-answer">Corrent answer:  </label>
-            <input id="actual-answer" type="number" min="0" max="9" value="0"/>
-        </div>
     </div>
 </div>
 </body>

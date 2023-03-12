@@ -1,4 +1,4 @@
 export interface ILayer {
-    countOfDefaultNeurons: number,
-    countOfOffsetNeurons: number
+    defaultNeuronsCount: number,
+    offsetNeuronsCount: number
 }

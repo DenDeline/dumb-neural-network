@@ -2,7 +2,11 @@ import { ILayer } from './Interfaces'
 import { Neuron } from './neuron'
 
 export class Layer implements ILayer {
-    public countOfDefaultNeurons: number = 0
-    public countOfOffsetNeurons: number = 0
+    public defaultNeuronsCount: number = 0
+    public offsetNeuronsCount: number = 0
+    public get neuronsCount() {
+        return this.defaultNeuronsCount + this.offsetNeuronsCount
+    }
+
     public neurons: Neuron[] = []
 }

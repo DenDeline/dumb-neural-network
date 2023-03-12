@@ -11,22 +11,18 @@ export class LayerFactory {
     }
 
     private static initNeuronsForLayer(layer: Layer) {
-        let neurons = layer.neurons
-        let countOfDefaultNeurons = layer.countOfDefaultNeurons
-        let countOfOffsetNeurons = layer.countOfOffsetNeurons
-
-        this.initDefaultNeuronsForLayer(neurons, countOfDefaultNeurons)
-        this.initOffsetNeuronsForLayer(neurons, countOfOffsetNeurons)
+        this.initDefaultNeuronsForLayer(layer.neurons, layer.defaultNeuronsCount)
+        this.initOffsetNeuronsForLayer(layer.neurons, layer.offsetNeuronsCount)
     }
 
-    private static initDefaultNeuronsForLayer(neurons: Neuron[], countOfDefaultNeurons: number) {
-        for (let i = 0; i < countOfDefaultNeurons; i++) {
+    private static initDefaultNeuronsForLayer(neurons: Neuron[], defaultNeuronsCount: number) {
+        for (let i = 0; i < defaultNeuronsCount; i++) {
             neurons.push(new Neuron(0))
         }
     }
 
-    private static initOffsetNeuronsForLayer(neurons: Neuron[], countOfOffsetNeurons: number) {
-        for (let i = 0; i < countOfOffsetNeurons; i++) {
+    private static initOffsetNeuronsForLayer(neurons: Neuron[], offsetNeuronsCount: number) {
+        for (let i = 0; i < offsetNeuronsCount; i++) {
             neurons.push(new Neuron(1))
         }
     }
